@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Interface de visualização</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; }
+        body { 
+            margin: 0; padding: 0; 
+            background: linear-gradient(135deg, #0f172a 0%, #17112c 100%); 
+            color: #f8fafc; 
+            font-family: 'Outfit', sans-serif; 
+            overflow: hidden; 
+            display: flex; flex-direction: column; height: 100vh;
+        }
+        
+        /* Cabeçalho estilo Glassmorphism (Vidro Fosco) */
+        header { 
+            padding: 15px 40px; 
+            background: rgba(255, 255, 255, 0.03); 
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex; justify-content: space-between; align-items: center; 
+            z-index: 10;
+        }
+        
+        .title-area h1 { margin: 0; font-size: 1.8rem; font-weight: 700; background: linear-gradient(to right, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent;}
+        .title-area span { font-size: 0.9rem; color: #94a3b8; font-weight: 300; display: block;}
+        
+        .controls { margin-top: 5px; }
+        .custom-file-upload {
+            display: inline-block;
+            padding: 6px 12px;
+            cursor: pointer;
+            background: rgba(255,255,255,0.1);
+            border-radius: 6px;
+            font-size: 0.8rem;
+            color: #38bdf8;
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            transition: 0.2s;
+        }
+        .custom-file-upload:hover { background: rgba(56, 189, 248, 0.2); }
+        input[type="file"] { display: none; }
+        
+        .stats { display: flex; gap: 20px; align-items: center;}
+        
+        /* Cards de Estatísticas */
+        .stat-card { 
+            padding: 10px 20px; 
+            border-radius: 12px; 
+            background: rgba(255, 255, 255, 0.04); 
+            border: 1px solid rgba(255,255,255,0.05);
+            font-size: 0.95rem;
+            color: #cbd5e1;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.2);
+            transition: transform 0.2s ease;
+        }
+        .stat-card:hover { transform: translateY(-2px); }
+        .stat-card span { display: block; font-weight: 700; font-size: 1.3rem; margin-top: 4px;}
+        
+        /* Cores Vibrantes (Neon) */
+        .stat-card.red span { color: #fb7185; text-shadow: 0 0 10px rgba(251, 113, 133, 0.3);}
+        .stat-card.blue span { color: #38bdf8; text-shadow: 0 0 10px rgba(56, 189, 248, 0.3);}
+        .stat-card.white span { color: #f8fafc; }
+        
+        .stat-card small { 
+            display: inline-block;
+            margin-top: 2px;
+            font-weight: 300;
+            letter-spacing: 0.5px;
+            color: #94a3b8;
+        }
+
+        main { 
+            flex: 1; position: relative; width: 100%; display: flex; align-items: center; justify-content: center;
+            padding: 20px;
+        }
+        
+        /* Container Central que guarda o desenho */
+        .canvas-container {
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6), inset 0 0 80px rgba(0,0,0,0.5);
+            display: flex; align-items: center; justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        canvas { 
+            max-width: 100%; max-height: 100%;
+            z-index: 5;
+        }
+        
+        /* Bolhas Flutuantes Atrás - Efeito Atmosférico */
+        .orb-1 { position: absolute; width: 400px; height: 400px; background: radial-gradient(circle, rgba(56,189,248,0.15) 0%, rgba(0,0,0,0) 70%); top: -100px; right: -100px; pointer-events: none; z-index: 1;}
+        .orb-2 { position: absolute; width: 500px; height: 500px; background: radial-gradient(circle, rgba(251,113,133,0.1) 0%, rgba(0,0,0,0) 70%); bottom: -150px; left: -100px; pointer-events: none; z-index: 1;}
+
+    </style>
+</head>
+<body>
+    <header>
+        <div class="title-area">
+            <h1>Resolução Dinamica do Problema</h1>
+            <span>Project T4 - Visualização Heurística</span>
+            <div class="controls">
+                <label class="custom-file-upload">
+                    <input type="file" id="fileInput" accept=".txt"/>
+                    Modo Manual: Subir um arquivo TXT
+                </label>
+            </div>
+        </div>
+        <div class="stats">
+            <div class="stat-card white">Cidades Mapeadas: <span id="pts">0</span></div>
+            <div class="stat-card red">Nearest Insertion: <span id="n-len">0.00</span> <small id="n-time" style="font-size: 0.7rem; opacity: 0.7;">(0ms)</small></div>
+            <div class="stat-card blue">Smallest Insertion: <span id="s-len">0.00</span> <small id="s-time" style="font-size: 0.7rem; opacity: 0.7;">(0ms)</small></div>
+        </div>
+    </header>
+    <main>
+        <div class="canvas-container">
+            <div class="orb-1"></div>
+            <div class="orb-2"></div>
+            <canvas id="canvas"></canvas>
+        </div>
+    </main>
+
+    <!-- Dados para uso no Front -->
+    <script src="data.js"></script>
+    <!-- Motor Gráfico Animado -->
+    <script src="script.js"></script>
+</body>
+</html>
